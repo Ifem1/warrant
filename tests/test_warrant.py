@@ -404,11 +404,11 @@ def test_protected_treasury_uses_real_warrant_boundary(direct_vm, direct_deploy,
     recipient = direct_owner
     amount = 25
     purpose = "Purchase GPU compute from the approved infrastructure provider for Project Atlas model training."
-    warrant_address = bytes(warrant.address)
+    warrant_address = warrant.address.as_bytes()
 
     def resolve_call(vm, request):
         call = request.get("CallContract") or request.get("PostMessage")
-        if call is None or bytes(call["address"]) != warrant_address:
+        if call is None or call["address"].as_bytes() != warrant_address:
             return None
         method = call["calldata"]["method"]
         args = call["calldata"].get("args", [])
