@@ -8,7 +8,7 @@ A consumer can define only the methods it needs:
 @gl.contract_interface
 class IWarrant:
     class View:
-        def permit_valid_for(
+        def permit_valid_for_context(
             self,
             permit_id: u256,
             consumer: Address,

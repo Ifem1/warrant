@@ -81,12 +81,13 @@ class IWarrant:
         def get_authority(self, authority_id: u256) -> dict: ...
         def get_permit(self, permit_id: u256) -> dict: ...
         def authority_effective(self, authority_id: u256) -> bool: ...
-        def permit_valid_for(
+        def permit_valid_for_context(
             self,
             permit_id: u256,
             consumer: Address,
             action_key: str,
             payload_hash: str,
+            action_context_hash: str,
             amount: u256,
         ) -> bool: ...
         def remaining_total(self, authority_id: u256) -> u256: ...
@@ -809,13 +810,6 @@ class Warrant(gl.Contract):
         if not valid_hex_digest(str(payload_hash).strip().lower()):
             raise gl.vm.UserError(f"{ERR_EXPECTED}: payload_hash must be a 64-character hex digest")
         return make_action_hash(consumer, clean_text(action_key), str(payload_hash).strip().lower(), "", int(amount))
-
-    @gl.public.view
-    def permit_valid_for(
-        self, permit_id: u256, consumer: Address, action_key: str, payload_hash: str, amount: u256
-    ) -> bool:
-        permit = self._require_permit(permit_id)
-        return self.permit_valid_for_context(permit_id, consumer, action_key, payload_hash, permit.action_context_hash, amount)
 
     @gl.public.view
     def permit_valid_for_context(

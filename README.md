@@ -131,7 +131,7 @@ See [`docs/CONSENSUS.md`](docs/CONSENSUS.md).
 [`examples/protected_treasury.py`](examples/protected_treasury.py) is a real consumer contract, not frontend code. It:
 
 1. computes a payload commitment for its exact requested transition;
-2. calls `Warrant.permit_valid_for(...)` synchronously;
+2. reconstructs the canonical action context from its real execution arguments and calls `Warrant.permit_valid_for_context(...)` synchronously;
 3. rejects a wrong consumer, action key, payload, amount, expired/revoked lineage or consumed permit;
 4. marks the permit locally used before changing state;
 5. performs its protected ledger transition;
@@ -156,7 +156,7 @@ See [`docs/COMPOSITION.md`](docs/COMPOSITION.md).
 - `authority_effective(...)`
 - `remaining_total(...)`
 - `action_commitment(...)`
-- `permit_valid_for(...)`
+- `permit_valid_for_context(...)`
 - `get_authority(...)`
 - `get_permit(...)`
 - `lineage(...)`

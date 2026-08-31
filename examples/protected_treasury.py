@@ -21,15 +21,6 @@ MAX_PURPOSE_LEN = 320
 @gl.contract_interface
 class IWarrant:
     class View:
-        def permit_valid_for(
-            self,
-            permit_id: u256,
-            consumer: Address,
-            action_key: str,
-            payload_hash: str,
-            amount: u256,
-        ) -> bool: ...
-
         def permit_valid_for_context(
             self,
             permit_id: u256,

@@ -138,7 +138,7 @@ The safe composition pattern is:
 
 ```text
 1. Warrant permit already exists and is finalized.
-2. Consumer synchronously calls permit_valid_for().
+2. Consumer reconstructs the canonical action context and synchronously calls permit_valid_for_context().
 3. Consumer checks its own used_permits map.
 4. Consumer marks permit used locally.
 5. Consumer performs protected state change.

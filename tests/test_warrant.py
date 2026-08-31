@@ -250,8 +250,9 @@ def test_payload_hash_binds_exact_action(direct_vm, direct_deploy, direct_owner,
     direct_vm.clear_mocks()
     with direct_vm.prank(direct_alice):
         permit_id = request_gpu_permit(direct_vm, contract, child_id, direct_bob)
-    assert contract.permit_valid_for(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, 25) is True
-    assert contract.permit_valid_for(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_B, 25) is False
+    context_hash = contract.get_permit(permit_id)["action_context_hash"]
+    assert contract.permit_valid_for_context(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, context_hash, 25) is True
+    assert contract.permit_valid_for_context(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_B, context_hash, 25) is False
 
 
 def test_consumer_target_binding_is_exact(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob, direct_charlie):
@@ -272,10 +273,11 @@ def test_root_revocation_invalidates_descendant_and_existing_permit(direct_vm, d
     with direct_vm.prank(direct_alice):
         permit_id = request_gpu_permit(direct_vm, contract, child_id, direct_bob)
     assert contract.authority_effective(child_id) is True
-    assert contract.permit_valid_for(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, 25) is True
+    context_hash = contract.get_permit(permit_id)["action_context_hash"]
+    assert contract.permit_valid_for_context(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, context_hash, 25) is True
     contract.revoke(root_id)
     assert contract.authority_effective(child_id) is False
-    assert contract.permit_valid_for(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, 25) is False
+    assert contract.permit_valid_for_context(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, contract.get_permit(permit_id)["action_context_hash"], 25) is False
 
 
 def test_semantic_context_cannot_misrepresent_bound_payload(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob):
@@ -338,7 +340,7 @@ def test_consumption_is_idempotent_and_disables_permit(direct_vm, direct_deploy,
         contract.record_consumption(permit_id, HASH_A)
         contract.record_consumption(permit_id, HASH_A)
     assert contract.get_permit(permit_id)["status_name"] == "CONSUMED"
-    assert contract.permit_valid_for(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, 25) is False
+    assert contract.permit_valid_for_context(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, contract.get_permit(permit_id)["action_context_hash"], 25) is False
 
 
 def test_consumption_rejects_wrong_payload_hash(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob):

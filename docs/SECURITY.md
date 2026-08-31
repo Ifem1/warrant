@@ -43,11 +43,11 @@ The critical assets are:
 
 ### Revoked parent leaves live children
 
-**Mitigation:** `authority_effective` and `permit_valid_for` traverse the complete bounded lineage. No descendant can be effective while any ancestor is revoked or expired.
+**Mitigation:** `authority_effective` and `permit_valid_for_context` traverse the complete bounded lineage. No descendant can be effective while any ancestor is revoked or expired.
 
 ### Permit is reused against another contract
 
-**Mitigation:** permits bind an exact consumer address. `permit_valid_for` checks it.
+**Mitigation:** permits bind an exact consumer address and canonical action context. `permit_valid_for_context` checks both.
 
 ### Permit is reused with changed parameters
 
