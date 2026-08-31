@@ -295,15 +295,16 @@ def test_semantic_context_cannot_misrepresent_bound_payload(direct_vm, direct_de
 
 def test_context_binding_changes_with_semantic_inputs(direct_deploy, direct_owner, direct_bob, direct_alice):
     contract, _ = deploy_root(direct_deploy, direct_owner)
-    base = contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_A, 25)
-    changed_consumer = contract.action_commitment(direct_alice, "TREASURY_TRANSFER", HASH_A, 25)
+    base = contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_A, HASH_A, 25)
+    changed_consumer = contract.action_commitment(direct_alice, "TREASURY_TRANSFER", HASH_A, HASH_A, 25)
     assert base != changed_consumer
 
 
 def test_cli_string_and_dict_contexts_have_same_canonical_hash(direct_deploy, direct_owner):
     contract, _ = deploy_root(direct_deploy, direct_owner)
-    context = '{"action":"TREASURY_TRANSFER","amount":25,"purpose":"purchase GPU compute for Project Atlas","recipient":"0xf8c03f1e5f6e6cee945a9b37807924d70e2a9c5f"}'
-    assert contract.action_context_hash_for(context) == contract.action_context_hash_for(context)
+    context_dict = {"purpose": " purchase GPU   compute for Project Atlas ", "recipient": "0xf8c03f1e5f6e6cee945a9b37807924d70e2a9c5f", "amount": 25, "action": "treasury_transfer"}
+    context_string = '{"action":"TREASURY_TRANSFER","amount":25,"purpose":"purchase GPU compute for Project Atlas","recipient":"0xf8c03f1e5f6e6cee945a9b37807924d70e2a9c5f"}'
+    assert contract.action_context_hash_for(context_dict) == contract.action_context_hash_for(context_string)
 
 
 def test_intermediate_grantor_can_revoke_its_child(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob):
@@ -362,10 +363,11 @@ def test_consumption_rejects_wrong_payload_hash(direct_vm, direct_deploy, direct
 
 def test_action_commitment_changes_when_any_bound_field_changes(direct_deploy, direct_owner, direct_alice, direct_bob):
     contract, _ = deploy_root(direct_deploy, direct_owner)
-    base = contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_A, 25)
-    assert base != contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_B, 25)
-    assert base != contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_A, 26)
-    assert base != contract.action_commitment(direct_alice, "TREASURY_TRANSFER", HASH_A, 25)
+    base = contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_A, HASH_A, 25)
+    assert base != contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_B, HASH_A, 25)
+    assert base != contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_A, HASH_B, 25)
+    assert base != contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_A, HASH_A, 26)
+    assert base != contract.action_commitment(direct_alice, "TREASURY_TRANSFER", HASH_A, HASH_A, 25)
 
 
 def test_lineage_hashes_pin_every_definition(direct_vm, direct_deploy, direct_owner, direct_alice):

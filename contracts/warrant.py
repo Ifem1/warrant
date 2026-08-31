@@ -831,11 +831,13 @@ class Warrant(gl.Contract):
         return u256(remaining)
 
     @gl.public.view
-    def action_commitment(self, consumer: Address, action_key: str, payload_hash: str, amount: u256) -> str:
+    def action_commitment(self, consumer: Address, action_key: str, payload_hash: str, action_context_hash: str, amount: u256) -> str:
         consumer = coerce_address(consumer)
         if not valid_hex_digest(str(payload_hash).strip().lower()):
             raise gl.vm.UserError(f"{ERR_EXPECTED}: payload_hash must be a 64-character hex digest")
-        return make_action_hash(consumer, clean_text(action_key), str(payload_hash).strip().lower(), "", int(amount))
+        if not valid_hex_digest(str(action_context_hash).strip().lower()):
+            raise gl.vm.UserError(f"{ERR_EXPECTED}: action_context_hash must be a 64-character hex digest")
+        return make_action_hash(consumer, clean_text(action_key), str(payload_hash).strip().lower(), str(action_context_hash).strip().lower(), int(amount))
 
     @gl.public.view
     def action_context_hash_for(self, action_context: str) -> str:
