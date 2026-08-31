@@ -1,4 +1,5 @@
 import importlib.util
+import json
 
 ZERO = "0x0000000000000000000000000000000000000000"
 FUTURE = 4102444800  # 2100-01-01
@@ -392,11 +393,11 @@ def test_pickling_safe_state(direct_vm, direct_deploy, direct_owner, direct_alic
 def test_protected_treasury_uses_real_warrant_boundary(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob):
     warrant, root_id = deploy_root(direct_deploy, direct_owner)
     import genlayer.gl.genvm_contracts as genvm_contracts
+    from genlayer.py import calldata
+    from genlayer.py.public_abi import ResultCode
 
     child_id = delegate_gpu(direct_vm, warrant, root_id, direct_alice)
     direct_vm.clear_mocks()
-    with direct_vm.prank(direct_alice):
-        permit_id = request_gpu_permit(direct_vm, warrant, child_id, direct_bob)
     # gltest's SDK registry is process-global and normally allows one contract
     # class; clear only that harness registry to model two deployed instances.
     genvm_contracts.__known_contract__ = None
@@ -404,7 +405,25 @@ def test_protected_treasury_uses_real_warrant_boundary(direct_vm, direct_deploy,
     recipient = direct_owner
     amount = 25
     purpose = "Purchase GPU compute from the approved infrastructure provider for Project Atlas model training."
+    action_context = json.dumps({
+        "action": "TREASURY_TRANSFER",
+        "recipient": address_text(recipient).lower(),
+        "amount": amount,
+        "purpose": " ".join(purpose.strip().split()),
+    }, sort_keys=True, separators=(",", ":"))
+    payload_hash = treasury.payload_hash_for(recipient, amount, purpose)
+    assert warrant.action_context_hash_for(action_context) == treasury.action_context_hash_for(recipient, amount, purpose)
+    direct_vm.mock_llm(r"WARRANT / CLASSIFY ACTION SCOPE", action("WITHIN_SCOPE"))
+    with direct_vm.prank(direct_alice):
+        permit_id = warrant.request_permit(child_id, treasury.address, "TREASURY_TRANSFER", payload_hash, action_context, amount, FUTURE)
+    permit = warrant.get_permit(permit_id)
+    assert permit["consumer"].lower() == str(treasury.address).lower()
+    assert permit["payload_hash"] == payload_hash
+    assert permit["action_context_hash"] == treasury.action_context_hash_for(recipient, amount, purpose)
     warrant_address = warrant.address.as_bytes
+
+    def subvm_return(value):
+        return bytes([int(ResultCode.RETURN)]) + calldata.encode(value)
 
     def resolve_call(vm, request):
         call = request.get("CallContract") or request.get("PostMessage")
@@ -412,11 +431,12 @@ def test_protected_treasury_uses_real_warrant_boundary(direct_vm, direct_deploy,
             return None
         method = str(call["calldata"]["method"])
         args = call["calldata"].get("args", [])
-        if "permit_valid_for_context" in method:
-            return {"ok": warrant.permit_valid_for_context(*args)}
-        if "record_consumption" in method:
-            warrant.record_consumption(*args)
-            return {"ok": None}
+        if method == "permit_valid_for_context":
+            return subvm_return(warrant.permit_valid_for_context(*args))
+        if method == "record_consumption":
+            with vm.prank(treasury.address):
+                warrant.record_consumption(*args)
+            return subvm_return(None)
         raise AssertionError(f"unexpected Warrant method: {method}")
 
     direct_vm._gl_call_hook = resolve_call
