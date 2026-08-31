@@ -1,3 +1,5 @@
+import importlib.util
+
 ZERO = "0x0000000000000000000000000000000000000000"
 FUTURE = 4102444800  # 2100-01-01
 FAR_FUTURE = 4133980800  # 2101-01-01
@@ -385,3 +387,39 @@ def test_pickling_safe_state(direct_vm, direct_deploy, direct_owner, direct_alic
     contract, root_id = deploy_root(direct_deploy, direct_owner)
     delegate_gpu(direct_vm, contract, root_id, direct_alice)
     assert contract.get_authority(root_id)["status_name"] == "ACTIVE"
+
+
+def test_protected_treasury_uses_real_warrant_boundary(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob):
+    warrant, root_id = deploy_root(direct_deploy, direct_owner)
+    child_id = delegate_gpu(direct_vm, warrant, root_id, direct_alice)
+    direct_vm.clear_mocks()
+    with direct_vm.prank(direct_alice):
+        permit_id = request_gpu_permit(direct_vm, warrant, child_id, direct_bob)
+    treasury = direct_deploy("examples/protected_treasury.py", warrant.address, sdk_version="v0.2.12")
+    recipient = direct_owner
+    amount = 25
+    purpose = "Purchase GPU compute from the approved infrastructure provider for Project Atlas model training."
+    warrant_address = bytes(warrant.address)
+
+    def resolve_call(vm, request):
+        call = request.get("CallContract") or request.get("PostMessage")
+        if call is None or bytes(call["address"]) != warrant_address:
+            return None
+        method = call["calldata"]["method"]
+        args = call["calldata"].get("args", [])
+        if method == "permit_valid_for_context":
+            return {"ok": warrant.permit_valid_for_context(*args)}
+        if method == "record_consumption":
+            warrant.record_consumption(*args)
+            return {"ok": None}
+        raise AssertionError(f"unexpected Warrant method: {method}")
+
+    direct_vm._gl_call_hook = resolve_call
+    with direct_vm.prank(direct_bob):
+        action_id = treasury.execute(permit_id, recipient, amount, purpose)
+    assert treasury.get_action(action_id)["permit_id"] == permit_id
+    assert treasury.total_executed() == amount
+    with direct_vm.prank(direct_bob):
+        with direct_vm.expect_revert("permit already used by this consumer"):
+            treasury.execute(permit_id, recipient, amount, purpose)
+    assert warrant.get_permit(permit_id)["status_name"] == "CONSUMED"
