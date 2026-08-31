@@ -1,0 +1,39 @@
+name: contract-ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install tooling
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-dev.txt
+          python -m pip install genvm-linter
+
+      - name: Repository preflight
+        run: python scripts/preflight.py
+
+      - name: GenVM lint and validate Warrant
+        run: |
+          genvm-lint check contracts/warrant.py
+          genvm-lint typecheck contracts/warrant.py
+          genvm-lint schema contracts/warrant.py --output /tmp/warrant-schema.json
+
+      - name: GenVM lint and validate consumer
+        run: |
+          genvm-lint check examples/protected_treasury.py
+          genvm-lint typecheck examples/protected_treasury.py
+
+      - name: Direct Mode tests
+        run: python -m pytest -q
