@@ -1,5 +1,4 @@
 import importlib.util
-import genlayer.gl.genvm_contracts as genvm_contracts
 
 ZERO = "0x0000000000000000000000000000000000000000"
 FUTURE = 4102444800  # 2100-01-01
@@ -392,6 +391,8 @@ def test_pickling_safe_state(direct_vm, direct_deploy, direct_owner, direct_alic
 
 def test_protected_treasury_uses_real_warrant_boundary(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob):
     warrant, root_id = deploy_root(direct_deploy, direct_owner)
+    import genlayer.gl.genvm_contracts as genvm_contracts
+
     child_id = delegate_gpu(direct_vm, warrant, root_id, direct_alice)
     direct_vm.clear_mocks()
     with direct_vm.prank(direct_alice):
