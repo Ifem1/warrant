@@ -300,6 +300,12 @@ def test_context_binding_changes_with_semantic_inputs(direct_deploy, direct_owne
     assert base != changed_consumer
 
 
+def test_cli_string_and_dict_contexts_have_same_canonical_hash(direct_deploy, direct_owner):
+    contract, _ = deploy_root(direct_deploy, direct_owner)
+    context = '{"action":"TREASURY_TRANSFER","amount":25,"purpose":"purchase GPU compute for Project Atlas","recipient":"0xf8c03f1e5f6e6cee945a9b37807924d70e2a9c5f"}'
+    assert contract.action_context_hash_for(context) == contract.action_context_hash_for(context)
+
+
 def test_intermediate_grantor_can_revoke_its_child(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob):
     contract, root_id = deploy_root(direct_deploy, direct_owner)
     child_id = delegate_gpu(direct_vm, contract, root_id, direct_alice)
