@@ -278,6 +278,26 @@ def test_root_revocation_invalidates_descendant_and_existing_permit(direct_vm, d
     assert contract.permit_valid_for(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, 25) is False
 
 
+def test_semantic_context_cannot_misrepresent_bound_payload(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob):
+    contract, root_id = deploy_root(direct_deploy, direct_owner)
+    child_id = delegate_gpu(direct_vm, contract, root_id, direct_alice)
+    direct_vm.clear_mocks()
+    with direct_vm.prank(direct_alice):
+        permit_id = request_gpu_permit(direct_vm, contract, child_id, direct_bob)
+    context_hash = contract.get_permit(permit_id)["action_context_hash"]
+    assert contract.permit_valid_for_context(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, context_hash, 25) is True
+    assert contract.permit_valid_for_context(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_B, context_hash, 25) is False
+    assert contract.permit_valid_for_context(permit_id, direct_bob, "TREASURY_TRANSFER", HASH_A, "0" * 64, 25) is False
+    assert contract.permit_valid_for_context(permit_id, direct_bob, "OTHER_ACTION", HASH_A, context_hash, 25) is False
+
+
+def test_context_binding_changes_with_semantic_inputs(direct_deploy, direct_owner, direct_bob, direct_alice):
+    contract, _ = deploy_root(direct_deploy, direct_owner)
+    base = contract.action_commitment(direct_bob, "TREASURY_TRANSFER", HASH_A, 25)
+    changed_consumer = contract.action_commitment(direct_alice, "TREASURY_TRANSFER", HASH_A, 25)
+    assert base != changed_consumer
+
+
 def test_intermediate_grantor_can_revoke_its_child(direct_vm, direct_deploy, direct_owner, direct_alice, direct_bob):
     contract, root_id = deploy_root(direct_deploy, direct_owner)
     child_id = delegate_gpu(direct_vm, contract, root_id, direct_alice)

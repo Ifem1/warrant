@@ -30,6 +30,16 @@ class IWarrant:
             amount: u256,
         ) -> bool: ...
 
+        def permit_valid_for_context(
+            self,
+            permit_id: u256,
+            consumer: Address,
+            action_key: str,
+            payload_hash: str,
+            action_context_hash: str,
+            amount: u256,
+        ) -> bool: ...
+
     class Write:
         def record_consumption(self, permit_id: u256, payload_hash: str) -> None: ...
 
@@ -52,6 +62,15 @@ def hash_payload(recipient: Address, amount: u256, purpose: str) -> str:
         "purpose": " ".join(str(purpose).strip().split()),
     }
     return Keccak256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+def canonical_action_context(recipient: Address, amount: u256, purpose: str) -> str:
+    payload = {"action": ACTION_KEY, "recipient": str(recipient).lower(), "amount": int(amount), "purpose": " ".join(str(purpose).strip().split())}
+    return json.dumps(payload, sort_keys=True, separators=(",", ":"))
+
+
+def hash_action_context(recipient: Address, amount: u256, purpose: str) -> str:
+    return Keccak256(canonical_action_context(recipient, amount, purpose).encode("utf-8")).hexdigest()
 
 
 class ProtectedTreasury(gl.Contract):
@@ -77,12 +96,14 @@ class ProtectedTreasury(gl.Contract):
             raise gl.vm.UserError("permit already used by this consumer")
 
         payload_hash = hash_payload(recipient, amount, purpose)
+        action_context_hash = hash_action_context(recipient, amount, purpose)
         warrant = IWarrant(self.warrant_address)
-        if not warrant.view().permit_valid_for(
+        if not warrant.view().permit_valid_for_context(
             permit_id,
             gl.message.contract_address,
             ACTION_KEY,
             payload_hash,
+            action_context_hash,
             amount,
         ):
             raise gl.vm.UserError("Warrant permit is not valid for this exact action")
@@ -108,6 +129,10 @@ class ProtectedTreasury(gl.Contract):
     @gl.public.view
     def payload_hash_for(self, recipient: Address, amount: u256, purpose: str) -> str:
         return hash_payload(recipient, amount, purpose)
+
+    @gl.public.view
+    def action_context_hash_for(self, recipient: Address, amount: u256, purpose: str) -> str:
+        return hash_action_context(recipient, amount, purpose)
 
     @gl.public.view
     def get_action(self, action_id: u256) -> dict:

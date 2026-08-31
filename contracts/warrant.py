@@ -65,6 +65,7 @@ class Permit:
     action_key: str
     payload_hash: str
     action_description: str
+    action_context_hash: str
     action_hash: str
     amount: u256
     issued_at: u256
@@ -353,11 +354,12 @@ def make_chain_hash(
     return hash_text(json.dumps(payload, sort_keys=True, separators=(",", ":")))
 
 
-def make_action_hash(consumer: Address, action_key: str, payload_hash: str, amount: int) -> str:
+def make_action_hash(consumer: Address, action_key: str, payload_hash: str, action_context_hash: str, amount: int) -> str:
     payload = {
         "consumer": address_text(consumer),
         "action_key": clean_text(action_key),
         "payload_hash": str(payload_hash).lower(),
+        "action_context_hash": str(action_context_hash).lower(),
         "amount": int(amount),
     }
     return hash_text(json.dumps(payload, sort_keys=True, separators=(",", ":")))
@@ -736,6 +738,7 @@ class Warrant(gl.Contract):
             raise gl.vm.UserError(f"{ERR_EXPECTED}: consumer is outside the deterministic target restriction")
 
         scope_context = self._scope_context(authority_id)
+        action_context_hash = hash_text(action_description)
         action_scope = self._classify_action(scope_context, action_key, action_description)
         if int(action_scope["verdict"]) != ACTION_WITHIN:
             raise gl.vm.UserError(
@@ -746,7 +749,7 @@ class Warrant(gl.Contract):
 
         permit_id = self.next_permit_id
         self.next_permit_id = u256(int(self.next_permit_id) + 1)
-        action_digest = make_action_hash(consumer, action_key, payload_hash, int(amount))
+        action_digest = make_action_hash(consumer, action_key, payload_hash, action_context_hash, int(amount))
         permit = self.permits.get_or_insert_default(permit_id)
         permit.permit_id = permit_id
         permit.authority_id = authority_id
@@ -755,6 +758,7 @@ class Warrant(gl.Contract):
         permit.action_key = action_key
         permit.payload_hash = payload_hash
         permit.action_description = action_description
+        permit.action_context_hash = action_context_hash
         permit.action_hash = action_digest
         permit.amount = amount
         permit.issued_at = u256(now)
@@ -804,15 +808,23 @@ class Warrant(gl.Contract):
         consumer = coerce_address(consumer)
         if not valid_hex_digest(str(payload_hash).strip().lower()):
             raise gl.vm.UserError(f"{ERR_EXPECTED}: payload_hash must be a 64-character hex digest")
-        return make_action_hash(consumer, clean_text(action_key), str(payload_hash).strip().lower(), int(amount))
+        return make_action_hash(consumer, clean_text(action_key), str(payload_hash).strip().lower(), "", int(amount))
 
     @gl.public.view
     def permit_valid_for(
+        self, permit_id: u256, consumer: Address, action_key: str, payload_hash: str, amount: u256
+    ) -> bool:
+        permit = self._require_permit(permit_id)
+        return self.permit_valid_for_context(permit_id, consumer, action_key, payload_hash, permit.action_context_hash, amount)
+
+    @gl.public.view
+    def permit_valid_for_context(
         self,
         permit_id: u256,
         consumer: Address,
         action_key: str,
         payload_hash: str,
+        action_context_hash: str,
         amount: u256,
     ) -> bool:
         consumer = coerce_address(consumer)
@@ -828,6 +840,8 @@ class Warrant(gl.Contract):
             if str(permit.action_key) != clean_text(action_key):
                 return False
             if str(permit.payload_hash) != str(payload_hash).strip().lower():
+                return False
+            if str(permit.action_context_hash) != str(action_context_hash).strip().lower():
                 return False
             if int(permit.amount) != int(amount):
                 return False
@@ -881,6 +895,7 @@ class Warrant(gl.Contract):
             "action_key": str(permit.action_key),
             "payload_hash": str(permit.payload_hash),
             "action_description": str(permit.action_description),
+            "action_context_hash": str(permit.action_context_hash),
             "action_hash": str(permit.action_hash),
             "amount": int(permit.amount),
             "issued_at": int(permit.issued_at),
