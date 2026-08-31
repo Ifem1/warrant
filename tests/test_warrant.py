@@ -410,11 +410,11 @@ def test_protected_treasury_uses_real_warrant_boundary(direct_vm, direct_deploy,
         call = request.get("CallContract") or request.get("PostMessage")
         if call is None or call["address"].as_bytes != warrant_address:
             return None
-        method = call["calldata"]["method"]
+        method = str(call["calldata"]["method"])
         args = call["calldata"].get("args", [])
-        if method == "permit_valid_for_context":
+        if "permit_valid_for_context" in method:
             return {"ok": warrant.permit_valid_for_context(*args)}
-        if method == "record_consumption":
+        if "record_consumption" in method:
             warrant.record_consumption(*args)
             return {"ok": None}
         raise AssertionError(f"unexpected Warrant method: {method}")
