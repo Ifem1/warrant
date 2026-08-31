@@ -27,7 +27,7 @@ def address_text(value):
 
 
 def deploy_root(direct_deploy, direct_owner, target=ZERO, total=500, per_action=100, expiry=FUTURE):
-    contract = direct_deploy("contracts/warrant.py")
+    contract = direct_deploy("contracts/warrant.py", sdk_version="v0.2.12")
     root_id = contract.create_root(direct_owner, ROOT_SCOPE, target, per_action, total, expiry)
     return contract, root_id
 
@@ -64,13 +64,13 @@ def test_create_root_is_explicit_authority_not_ai_judgement(direct_deploy, direc
 
 
 def test_root_rejects_zero_delegate(direct_vm, direct_deploy):
-    contract = direct_deploy("contracts/warrant.py")
+    contract = direct_deploy("contracts/warrant.py", sdk_version="v0.2.12")
     with direct_vm.expect_revert("delegate cannot be the zero address"):
         contract.create_root(ZERO, ROOT_SCOPE, ZERO, 100, 500, FUTURE)
 
 
 def test_root_rejects_invalid_limits(direct_vm, direct_deploy, direct_owner):
-    contract = direct_deploy("contracts/warrant.py")
+    contract = direct_deploy("contracts/warrant.py", sdk_version="v0.2.12")
     with direct_vm.expect_revert("max_per_action cannot exceed max_total"):
         contract.create_root(direct_owner, ROOT_SCOPE, ZERO, 501, 500, FUTURE)
 
