@@ -407,7 +407,7 @@ def test_protected_treasury_uses_real_warrant_boundary(direct_vm, direct_deploy,
     purpose = "Purchase GPU compute from the approved infrastructure provider for Project Atlas model training."
     action_context = json.dumps({
         "action": "TREASURY_TRANSFER",
-        "recipient": address_text(recipient).lower(),
+        "recipient": str(recipient).lower(),
         "amount": amount,
         "purpose": " ".join(purpose.strip().split()),
     }, sort_keys=True, separators=(",", ":"))
