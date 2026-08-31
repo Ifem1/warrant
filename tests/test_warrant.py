@@ -1,4 +1,5 @@
 import importlib.util
+import genlayer.gl.genvm_contracts as genvm_contracts
 
 ZERO = "0x0000000000000000000000000000000000000000"
 FUTURE = 4102444800  # 2100-01-01
@@ -395,6 +396,9 @@ def test_protected_treasury_uses_real_warrant_boundary(direct_vm, direct_deploy,
     direct_vm.clear_mocks()
     with direct_vm.prank(direct_alice):
         permit_id = request_gpu_permit(direct_vm, warrant, child_id, direct_bob)
+    # gltest's SDK registry is process-global and normally allows one contract
+    # class; clear only that harness registry to model two deployed instances.
+    genvm_contracts.__known_contract__ = None
     treasury = direct_deploy("examples/protected_treasury.py", warrant.address, sdk_version="v0.2.12")
     recipient = direct_owner
     amount = 25
