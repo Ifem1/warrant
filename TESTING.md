@@ -7,6 +7,11 @@ python -m pip install -r requirements-dev.txt
 python -m pytest -q
 ```
 
+The suite contains 35 Direct Mode unit/adversarial tests plus one explicitly
+skipped documentation test. Address-based cross-contract calls are not
+supported by genlayer-test Direct Mode; cross-contract composition is proved
+on StudioNet instead.
+
 The suite is intended to cover:
 
 - explicit root authority creation;

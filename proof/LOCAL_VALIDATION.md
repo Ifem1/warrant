@@ -11,17 +11,15 @@ This file records only checks actually completed in the package-generation envir
   - `tests/conftest.py`
   - `tests/test_warrant.py`
 - Frontend boundary check: no `frontend/`, `app/`, `pages/`, or `src/components/` application surface is present.
-- Contract source SHA-256: `15B17B42BAA08CF9E03FC45514A8D533BB7889EFE79D1400DFD3354C074DC88C`
-- Consumer source SHA-256: `D3BF746D022AFF096B6532A4C2C7AA0CA219CFFB0E6A03B6AD2087D678496322`
+- Contract source SHA-256: `83870F93E24FBA37CADD5946BDFFF82E81006352BDF9B6C250C8060AF508973D`
+- Consumer source SHA-256: `09C439BB688359823AAD7DBA6F060849AA19D15EE698328EFEBC864F3D6280EB`
 
 ## Not completed in this environment
 
-The execution environment could not reach package registries / GenLayer network services, so these checks are deliberately **not** claimed as passing:
+Windows Direct Mode cannot initialize the injected SDK calldata context, so its result is not claimed here. Address-based cross-contract calls are also unsupported by genlayer-test Direct Mode; composition belongs to StudioNet. The following checks were completed in clean Linux GitHub Actions run `33442549070`:
 
-- `genvm-lint check`
-- `genvm-lint typecheck`
-- `genvm-lint schema`
-- `pytest` through the real `genlayer-test` Direct Mode runtime
-- StudioNet deployment or finalized lifecycle proof
+- `genvm-lint check`, `typecheck`, and `schema` for both contracts
+- 35 Direct Mode tests passed and one unsupported composition test skipped
+- StudioNet deployments are finalized; the lifecycle remains incomplete in `LIVE_PROOF.md`
 
 The finishing agent must run those checks with current GenLayer tooling, fix real compatibility errors without weakening the security invariants, add regression tests for fixes, then deploy both Warrant and `ProtectedTreasury` and fill `proof/LIVE_PROOF.md` from actual finalized receipts.
