@@ -8,32 +8,32 @@ This file is intentionally blank of fabricated blockchain evidence. The finishin
 
 - Repository: `https://github.com/Ifem1/warrant`
 - Branch: `main`
-- Source commit: `78b7ebd`
+- Source commit: `8757f1c`
 - `contracts/warrant.py` SHA-256: `83870F93E24FBA37CADD5946BDFFF82E81006352BDF9B6C250C8060AF508973D`
 - `examples/protected_treasury.py` SHA-256: `09C439BB688359823AAD7DBA6F060849AA19D15EE698328EFEBC864F3D6280EB`
 
 ## Validation
 
 - GenVM lint Warrant: `PASSED in GitHub Actions run 33440491196`
-- GenVM validate Warrant: `PENDING`
-- GenVM typecheck Warrant: `PENDING`
-- GenVM schema Warrant: `PENDING`
-- GenVM lint consumer: `PENDING`
-- Direct Mode tests: `35 passed in GitHub Actions run 33440491196`
-- Repository preflight: `25 passed, 0 failed in GitHub Actions run 33440491196`
+- GenVM validate Warrant: `PASSED in GitHub Actions run 33454584299`
+- GenVM typecheck Warrant: `PASSED in GitHub Actions run 33454584299`
+- GenVM schema Warrant: `PASSED in GitHub Actions run 33454584299`
+- GenVM lint consumer: `PASSED in GitHub Actions run 33454584299`
+- Direct Mode tests: `35 passed, 1 skipped in GitHub Actions run 33454584299`
+- Repository preflight: `25 passed, 0 failed in GitHub Actions run 33454584299`
 
 ## Deployments
 
 ### Warrant
 
-- Address: `0x7caa9dc2e89b62144b256117D9F19fB042C7a901`
-- Deployment transaction: `0x821ad717546cc94ea77a003a783a1f3c662a6eb576b6f8ddfd276328d25bc513`
+- Address: `0xdF38185e0EA3bCb4779b3E56AB5eeeE7e63381De`
+- Deployment transaction: `0xfbd0275f2720eed097f874523bb2426ba0ec757f030608467b90add207325620`
 - Finalized status: `FINALIZED`
 
 ### ProtectedTreasury
 
-- Address: `0x132E64757c28EB62Aa0b7E7BB8f5FBAD92beed96`
-- Deployment transaction: `0x3f961253b35099c121e9d5d9834bb1afb9acceb90bb4da08d09eef435dc3b6d1`
+- Address: `0x5a0c97395A95d6cDf766313de3D218FA19B10915`
+- Deployment transaction: `0x453df80dfde0f9e78ace906ea186564f235304a251363cdeae13347fcd58bdf7`
 - Finalized status: `FINALIZED`
 
 ## Lifecycle receipts
@@ -91,4 +91,5 @@ This file is intentionally blank of fabricated blockchain evidence. The finishin
 
 ## Explorer links
 
-Add canonical StudioNet Explorer links here after finalization.
+- Warrant: https://genlayer-explorer.vercel.app/address/0xdF38185e0EA3bCb4779b3E56AB5eeeE7e63381De
+- ProtectedTreasury: https://genlayer-explorer.vercel.app/address/0x5a0c97395A95d6cDf766313de3D218FA19B10915
