@@ -16,10 +16,8 @@ This file records only checks actually completed in the package-generation envir
 
 ## Not completed in this environment
 
-Windows Direct Mode cannot initialize the injected SDK calldata context, so its result is not claimed here. Address-based cross-contract calls are also unsupported by genlayer-test Direct Mode; composition belongs to StudioNet. The following checks were completed in clean Linux GitHub Actions run `33442549070`:
+Windows Direct Mode cannot initialize the injected SDK calldata context, so its result is not claimed here. Address-based cross-contract calls are also unsupported by genlayer-test Direct Mode; composition belongs to StudioNet. The following checks were completed in clean Linux GitHub Actions run `33454584299`:
 
 - `genvm-lint check`, `typecheck`, and `schema` for both contracts
 - 35 Direct Mode tests passed and one unsupported composition test skipped
-- StudioNet deployments are finalized; the lifecycle remains incomplete in `LIVE_PROOF.md`
-
-The finishing agent must run those checks with current GenLayer tooling, fix real compatibility errors without weakening the security invariants, add regression tests for fixes, then deploy both Warrant and `ProtectedTreasury` and fill `proof/LIVE_PROOF.md` from actual finalized receipts.
+- StudioNet deployments and the complete finalized lifecycle are recorded in `LIVE_PROOF.md`.

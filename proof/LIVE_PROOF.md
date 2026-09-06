@@ -88,5 +88,5 @@ This file is intentionally blank of fabricated blockchain evidence. The finishin
 
 ## Explorer links
 
-- Warrant: https://genlayer-explorer.vercel.app/address/0xdF38185e0EA3bCb4779b3E56AB5eeeE7e63381De
-- ProtectedTreasury: https://genlayer-explorer.vercel.app/address/0x5a0c97395A95d6cDf766313de3D218FA19B10915
+- Warrant: https://explorer-studio.genlayer.com/address/0xdF38185e0EA3bCb4779b3E56AB5eeeE7e63381De
+- ProtectedTreasury: https://explorer-studio.genlayer.com/address/0x5a0c97395A95d6cDf766313de3D218FA19B10915
